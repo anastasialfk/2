@@ -1,0 +1,52 @@
+"""Лабораторная работа №2, вариант 10.
+
+Запуск:  python main.py [books.csv | books-en.csv]
+
+"""
+import sys
+
+from csv_app import (TITLE_MAX_LEN, count_long_titles, format_book, load_books,
+                     save_references, search_by_author)
+from xml_reader import parse_name_charcode
+
+
+def run_csv(path):
+    books, min_year = load_books(path)
+    print(f"Файл: {path}, загружено записей: {len(books)}\n")
+
+    # 1. Количество записей с названием длиннее 30 символов
+    n = count_long_titles(books)
+    print(f"1) Записей с названием длиннее {TITLE_MAX_LEN} символов: {n}\n")
+
+    # 2. Поиск по автору
+    print(f"2) Поиск книги по автору (в выдаче только книги от {min_year} года).")
+    print("   Пустая строка — завершить поиск.")
+    while True:
+        query = input("   Автор: ").strip()
+        if not query:
+            break
+        found = search_by_author(books, query, min_year)
+        if not found:
+            print(f"   Ничего не найдено (год >= {min_year}).")
+            continue
+        print(f"   Найдено: {len(found)}")
+        for i, b in enumerate(found, 1):
+            print(f"   {i}. {format_book(b)}")
+    print()
+
+    # 3. Генератор библиографических ссылок -> references.txt
+    out = save_references(books, "references.txt")
+    print(f"3) 20 библиографических ссылок сохранены в файл {out}\n")
+
+
+def run_xml(path="currency.xml"):
+    data = parse_name_charcode(path)
+    print(f'4) Словарь "Name - CharCode" ({len(data)} валют):')
+    for name, code in data.items():
+        print(f"   {name} - {code}")
+
+
+if __name__ == "__main__":
+    csv_path = sys.argv[1] if len(sys.argv) > 1 else "books.csv"
+    run_csv(csv_path)
+    run_xml()
